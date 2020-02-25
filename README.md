@@ -1,4 +1,4 @@
-# milli
+# Quiz-a-Script
 A "Who wants to be a Millionaire" like quiz.
 
 Please check out the variables in index.html to change the settings.
