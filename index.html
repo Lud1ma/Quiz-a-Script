@@ -1,0 +1,354 @@
+<html>
+<meta charset="utf-16"/>
+    <head>
+        <title>
+            Who wants to be a millionaire?
+        </title>
+    </head>
+
+    <body bgcolor="#000000"> <!-- Color can be set to anything !-->
+        <canvas id="myCanvas" width="1600" height="1200" style="border:1px solid #000000;"></canvas>  <!-- If wanted, change size here !-->
+
+        <script>
+
+/*  Created by Ludima.
+    You are allowed to share, remix and transform this code.
+    You must not use it for commercial purpose.
+    You must give credit to me and make it clear if changes were made.
+*/
+
+// Declaration and Initialization:
+
+// Sound data, if wanted (Uncomment for using, path to file in the Brackets)
+// var snd_correct = new Audio(PATH);
+// var snd_wrong = new Audio(PATH);
+
+// If Sound is not wanted, change false to true:
+sound_in_use = false;
+
+// Running variable
+var is_running = true; 
+
+// Temporary variables
+var correctAnswer = 3;
+var userAnswer;
+
+// Counting variables
+var correct_answers = 0;
+var wrong_answers = 0;
+
+var show_counters = true; // Change if not wanted 
+
+//Jokervariablen
+var publikum = true;
+var experte = true;
+
+var jokers_in_use = true; // Change if not wanted
+
+// change proportional to width of the canvas
+var scale = 2;
+
+// Special-Modes
+var endless = false; //true for endlessmode
+
+var pools = false;  /*  If true, questions are sorted by their degree of difficulty
+                        If false, they are being chosen randomly */                     
+
+// color variables (You may play with them)
+var text_color_fill = "rgba(200, 200, 255, 1)";
+var text_color_stroke = "rgba(250, 245, 255, 1)";
+var text_clr = "rgba(255, 140, 0, 1)";
+var text_gewinn = "rgba(255, 255, 0, 1)";
+var boxes_color = "rgba(255, 255, 255, 0.1)";
+var gruen = "rgba(0, 255, 0, 1)";
+var rot = "rgba(255, 0, 0, 1)";
+
+
+/* Init */
+var c = document.getElementById('myCanvas');
+var ctx = c.getContext('2d');
+
+// BG Gradient
+var bg_color = ctx.createLinearGradient(0, 0, c.width, c.height);
+bg_color.addColorStop(0, "#000055");
+bg_color.addColorStop(0.5, "#0000FF");
+bg_color.addColorStop(1, "#000055");
+
+
+function loadExample() {
+    var questions = [
+        ['Which of these', 'letters is "A"?', '', 'A', 'B', 'C', 'D', '0'],
+        ['Which of these', 'letters is "C"?', '', 'A', 'B', 'C', 'D', '2'],
+        ['WWWWWWWWWWWWWWWWW', 'letters is "C"?', '', 'A', 'B', 'C', 'D', '2']
+    ];
+
+    return questions;
+} // Copy this for more pools
+
+function loadQuestions() {
+    var questionsList = [
+        loadExample()
+        // Append all functions here, seperated by commas
+    ];
+    
+    return questionsList;
+}
+
+var currentPool = 0;
+var questions = loadQuestions();
+var number_pools = questions.length;
+
+
+window.addEventListener('load', eventWindowLoaded, false);  
+function eventWindowLoaded() {
+    // fill background
+	ctx.fillStyle = bg_color;
+	ctx.fillRect(0, 0, 800*scale, 450*scale);
+    
+    var question = set_question(0);
+    
+    ctx.fillRect(0, 0, c.width, c.height);
+    main(c, question);
+}
+
+function set_question(current) {
+    if (pools) {
+        return questions[current][rand(0, questions[current].length-1)];
+    } else {
+        pool = rand(0, number_pools-1);
+        console.log(pool);
+        return questions[pool][rand(0, questions[pool].length-1)];
+    }
+}
+
+
+function rand(min, max) {
+	return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function iterClear() {
+    // Clear
+	ctx.fillStyle = bg_color;
+	ctx.fillRect(0, 0, 800*scale, 450*scale);
+    
+    if (pools) { 
+        // Iterate to next question
+        currentPool++;
+        if (currentPool > number_pools) {currentPool = 0;}
+    }
+    question = set_question(currentPool);
+}
+
+//Frage schreiben
+function draw_question(c, question) {
+    correctAnswer = question[7];
+
+    // clear screen
+    ctx.fillStyle = bg_color;
+    ctx.fillRect(0, 0, 800*scale, 250*scale);
+    ctx.fillRect(40*scale, 275*scale, 320*scale, 25*scale);
+    ctx.fillRect(420*scale, 275*scale, 320*scale, 25*scale);
+    ctx.fillRect(40*scale, 330*scale, 320*scale, 25*scale);
+    ctx.fillRect(420*scale, 330*scale, 320*scale, 25*scale);
+    
+    /* Question */
+    ctx.fillStyle = text_color_fill;
+    ctx.strokeStyle = text_color_stroke;
+    ctx.lineWidth = 2*scale;
+    ctx.font = '90px Ubuntu';                            //45px at scale 1  ----------------------------------
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.fillText(question[0], c.width/2, 45*scale);
+    ctx.fillText(question[1], c.width/2, 110*scale);
+    ctx.fillText(question[2], c.width/2, 175*scale);
+    ctx.strokeText(question[0], c.width/2, 45*scale);
+    ctx.strokeText(question[1], c.width/2, 110*scale);
+    ctx.strokeText(question[2], c.width/2, 175*scale);
+    
+    // Answers
+    ctx.font = 'bold 40px Ubuntu';                             //20px at scale 1  ----------------------------------
+    ctx.textAlign = 'left';
+    ctx.fillStyle = text_clr;
+    ctx.fillText("A: ", 40*scale, 278*scale);
+    ctx.fillText("B: ", 420*scale, 278*scale);
+    ctx.fillText("C: ", 40*scale, 333*scale);
+    ctx.fillText("D: ", 420*scale, 333*scale);
+    
+    ctx.fillStyle = text_color_fill;
+    ctx.fillText(question[3], 60*scale, 278*scale);
+    ctx.fillText(question[4], 440*scale, 278*scale);
+    ctx.fillText(question[5], 60*scale, 333*scale);
+    ctx.fillText(question[6], 440*scale, 333*scale);
+    
+    // Gewinn
+    ctx.fillStyle = text_gewinn;
+    ctx.fillText("Bisheriger Gewinn: ", 5*scale, 5*scale);
+    
+    
+    switch (currentPool) {
+        case(0): ctx.fillText("0€", 190*scale, 5*scale); ctx.fillText("50€-Question", 350*scale, 5*scale); break;
+        case(1): ctx.fillText("50€", 190*scale, 5*scale); ctx.fillText("500€-Question", 350*scale, 5*scale); break;
+        case(2): ctx.fillText("500€", 190*scale, 5*scale); ctx.fillText("2.000€-Question", 350*scale, 5*scale); break;
+        case(3): ctx.fillText("2.000€", 190*scale, 5*scale); ctx.fillText("16.000€-question", 350*scale, 5*scale); break;
+        case(4): ctx.fillText("16.000€", 190*scale, 5*scale); ctx.fillText("64.000€-question", 350*scale, 5*scale); break;
+        case(5): ctx.fillText("64.000€", 190*scale, 5*scale); ctx.fillText("Millionen-question", 350*scale, 5*scale); break;
+    } // Change for number of your Pools
+    
+    // Draw Boxes
+    ctx.strokeStyle = boxes_color;
+    drawHex(-15, 0);
+    drawHex(375, 0);
+    drawHex(-15, 55);
+    drawHex(375, 55);
+    
+    if (jokers_in_use) {
+        // Joker
+        ctx.textAlign = 'center';
+        if (publikum) {
+            ctx.fillStyle = gruen;
+        } else {
+            ctx.fillStyle = rot;
+        }
+        ctx.fillText("Publikums-Joker", c.width/2-100*2, 400*2);
+
+        if (experte) {
+            ctx.fillStyle = gruen;
+        } else {
+            ctx.fillStyle = rot;
+        }
+        ctx.fillText("Experten-Joker", c.width/2+100*2, 400*2);
+    }
+    
+    if (show_counters) {
+        ctx.font = 'bold 20px Ubuntu';                             //10px at scale 1  ----------------------------------
+        ctx.textAlign = 'left';
+        ctx.fillStyle = text_clr;
+        ctx.fillText("Correct answers: ", 700*scale, 10*scale);
+        ctx.fillText("Wrong answers: ", 705*scale, 20*scale);
+        ctx.fillText(correct_answers, 783*scale, 10*scale);
+        ctx.fillText(wrong_answers, 783*scale, 20*scale);
+    } 
+}
+// Function of drawing yellow boxes
+function drawHex(x, y, width=5) {
+    ctx.beginPath();
+    ctx.moveTo(scale*(x+45), scale*(y+270));
+    ctx.lineTo(scale*(x+400), scale*(y+270));
+    ctx.lineTo(scale*(x+415), scale*(y+288));
+    ctx.lineTo(scale*(x+400), scale*(y+305));
+    ctx.lineTo(scale*(x+45), scale*(y+305));
+    ctx.lineTo(scale*(x+30), scale*(y+288));
+    ctx.lineTo(scale*(x+45), scale*(y+270));
+    ctx.lineWidth = width*scale;
+    ctx.stroke();
+}
+
+// Function of overwriting yellow boxes
+function drawHexF(x, y) {
+    ctx.beginPath();
+    ctx.moveTo(scale*(x+40), scale*(y+265));
+    ctx.lineTo(scale*(x+405), scale*(y+265));
+    ctx.lineTo(scale*(x+425), scale*(y+288));
+    ctx.lineTo(scale*(x+405), scale*(y+310));
+    ctx.lineTo(scale*(x+40), scale*(y+310));
+    ctx.lineTo(scale*(x+20), scale*(y+288));
+    ctx.lineTo(scale*(x+40), scale*(y+265));
+    ctx.fill();
+}
+
+// Function of drawing green boxes
+function drawHexByAnswer(answer) {
+    if (answer == 0) {drawHex(-15, 0, 10);}
+    if (answer == 1) {drawHex(375, 0, 10);}
+    if (answer == 2) {drawHex(-15, 55, 10);}
+    if (answer == 3) {drawHex(375, 55, 10);}
+}
+
+function main(c, question) {
+    
+	// Function of getting user input and checking if its correct
+	document.addEventListener('keypress', function() {
+        // Test input
+		e = window.event;
+		
+		if (e.keyCode == 101) {
+            experte = false;
+		} 
+		else if (e.keyCode == 112) {
+            publikum = false;
+		} 
+		else {		
+            switch (e.keyCode) {
+                case (97 || 65): userAnswer = 0; break;
+                case (98 || 66): userAnswer = 1; break;
+                case (99 || 67): userAnswer = 2; break;
+                case (100 || 68): userAnswer = 3; break;
+            } 
+            
+            ctx.strokeStyle = "#FFFF00";
+            drawHexByAnswer(userAnswer);
+            
+            window.setTimeout(function() {
+            
+                // Give Feedback
+                if (userAnswer == correctAnswer) {
+                    ctx.strokeStyle = gruen;
+                    drawHexByAnswer(correctAnswer);
+                    correct_answers++;
+                    
+                    if (sound_in_use) {
+                        snd_correct.play(); //Play "correct" sound
+                    }
+                }
+                else {
+                    ctx.strokeStyle = "#00FF00";
+                    drawHexByAnswer(correctAnswer);
+                    ctx.strokeStyle = "#FF0000";
+                    drawHexByAnswer(userAnswer);
+                    wrong_answers++;
+                    
+                    if (sound_in_use) {
+                        snd_wrong.play();  //Play "false" sound
+                    }
+                    
+                    if (!endless) {
+                        is_running = false;
+                    } else {
+                        is_running = true;
+                    }
+                }
+                
+                if (currentPool <= 4) {
+                    if (is_running) {
+                        window.setTimeout(function() {
+                            iterClear();
+                            question = questions[currentPool][rand(0, questions[currentPool].length-1)];
+                        }, 2000);
+                    }
+                } else {
+                    if (is_running) {
+                        alert("You have a million!");
+                    }
+                }
+            }, 2000);
+        }
+    });
+    
+    
+    
+    function gameLoop() {
+        if (is_running) {
+            window.setTimeout(gameLoop, 50);
+            draw_question(c, question);   
+        }
+    }
+    
+    
+    gameLoop();
+    
+}
+
+</script>
+
+</body>
+</html>
