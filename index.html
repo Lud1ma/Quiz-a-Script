@@ -78,8 +78,7 @@ bg_color.addColorStop(1, "#000055");
 function loadExample() {
     var questions = [
         ['Which of these', 'letters is "A"?', '', 'A', 'B', 'C', 'D', '0'],
-        ['Which of these', 'letters is "C"?', '', 'A', 'B', 'C', 'D', '2'],
-        ['WWWWWWWWWWWWWWWWW', 'letters is "C"?', '', 'A', 'B', 'C', 'D', '2']
+        ['Which of these', 'letters is "C"?', '', 'A', 'B', 'C', 'D', '2']
     ];
 
     return questions;
@@ -209,14 +208,14 @@ function draw_question(c, question) {
         } else {
             ctx.fillStyle = rot;
         }
-        ctx.fillText("Publikums-Joker", c.width/2-100*2, 400*2);
+        ctx.fillText("Ask the public", c.width/2-100*2, 400*2);
 
         if (experte) {
             ctx.fillStyle = gruen;
         } else {
             ctx.fillStyle = rot;
         }
-        ctx.fillText("Experten-Joker", c.width/2+100*2, 400*2);
+        ctx.fillText("Ask an expert", c.width/2+100*2, 400*2);
     }
     
     if (show_counters) {
